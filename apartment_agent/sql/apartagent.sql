@@ -1,0 +1,222 @@
+# SQL Manager Lite for MySQL 5.5.0.45357
+# ---------------------------------------
+# Host     : localhost
+# Port     : 3306
+# Database : apartagent
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES cp1251 */;
+
+SET FOREIGN_KEY_CHECKS=0;
+
+CREATE DATABASE `apartagent`
+    CHARACTER SET 'cp1251'
+    COLLATE 'cp1251_general_ci';
+
+USE `apartagent`;
+
+#
+# Structure for the `apartments` table : 
+#
+
+CREATE TABLE `apartments` (
+  `ApartmentID` INTEGER(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `ApartType` INTEGER(10) UNSIGNED DEFAULT NULL,
+  `TotSquare` FLOAT DEFAULT NULL,
+  `UseSquare` FLOAT DEFAULT NULL,
+  `Floor` INTEGER(10) UNSIGNED DEFAULT NULL,
+  `Balcony` VARCHAR(20) COLLATE cp1251_general_ci DEFAULT NULL,
+  PRIMARY KEY (`ApartmentID`) USING BTREE
+) ENGINE=InnoDB
+AUTO_INCREMENT=6 CHARACTER SET 'cp1251' COLLATE 'cp1251_general_ci'
+;
+
+#
+# Structure for the `buyers` table : 
+#
+
+CREATE TABLE `buyers` (
+  `BuyerID` INTEGER(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `BuyerFIO` VARCHAR(255) COLLATE cp1251_general_ci DEFAULT NULL,
+  `Phone` VARCHAR(20) COLLATE cp1251_general_ci DEFAULT NULL,
+  `Pasport` VARCHAR(20) COLLATE cp1251_general_ci DEFAULT NULL,
+  PRIMARY KEY (`BuyerID`) USING BTREE
+) ENGINE=InnoDB
+AUTO_INCREMENT=6 CHARACTER SET 'cp1251' COLLATE 'cp1251_general_ci'
+;
+
+#
+# Structure for the `info` table : 
+#
+
+CREATE TABLE `info` (
+  `InfoID` INTEGER(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `Salesman_SalesmanmanID` INTEGER(10) UNSIGNED NOT NULL,
+  `Buyers_BuyerID` INTEGER(10) UNSIGNED NOT NULL,
+  `Apartments_ApartmentID` INTEGER(10) UNSIGNED NOT NULL,
+  `Price` DECIMAL(10,0) DEFAULT NULL,
+  `SaleDate` INTEGER(10) UNSIGNED DEFAULT NULL,
+  PRIMARY KEY (`InfoID`) USING BTREE,
+  KEY `Info_FKIndex1` (`Apartments_ApartmentID`) USING BTREE,
+  KEY `Info_FKIndex2` (`Buyers_BuyerID`) USING BTREE,
+  KEY `Info_FKIndex3` (`Salesman_SalesmanmanID`) USING BTREE
+) ENGINE=InnoDB
+AUTO_INCREMENT=6 CHARACTER SET 'cp1251' COLLATE 'cp1251_general_ci'
+;
+
+#
+# Structure for the `salesman` table : 
+#
+
+CREATE TABLE `salesman` (
+  `SalesmanmanID` INTEGER(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `FIO` VARCHAR(255) COLLATE cp1251_general_ci DEFAULT NULL,
+  `Pasport` VARCHAR(20) COLLATE cp1251_general_ci DEFAULT NULL,
+  `Address` VARCHAR(45) COLLATE cp1251_general_ci DEFAULT NULL,
+  `Phone` VARCHAR(20) COLLATE cp1251_general_ci DEFAULT NULL,
+  PRIMARY KEY (`SalesmanmanID`) USING BTREE
+) ENGINE=InnoDB
+AUTO_INCREMENT=6 CHARACTER SET 'cp1251' COLLATE 'cp1251_general_ci'
+;
+
+#
+# Definition for the `NP1` procedure : 
+#
+
+DELIMITER $$
+
+CREATE DEFINER = 'root'@'localhost' PROCEDURE `NP1`(
+        IN `Apart_type` INTEGER
+    )
+    NOT DETERMINISTIC
+    CONTAINS SQL
+    SQL SECURITY DEFINER
+    COMMENT ''
+BEGIN
+DECLARE EXIT HANDLER FOR NOT FOUND
+BEGIN
+SELECT * FROM `apartments`;
+END;
+SELECT *
+    INTO @dummy1, @dummy2, @dummy3, @dummy4, @dummy5, @dummy6
+    FROM apartments
+    WHERE ApartType = Apart_type
+    LIMIT 1;
+SELECT ApartmentID, TotSquare, Floor, Balcony
+FROM apartments
+WHERE ApartType = Apart_type;
+END$$
+
+DELIMITER ;
+
+#
+# Definition for the `NP2` procedure : 
+#
+
+DELIMITER $$
+
+CREATE DEFINER = 'root'@'localhost' PROCEDURE `NP2`(
+        IN `Adres` VARCHAR(20)
+    )
+    NOT DETERMINISTIC
+    CONTAINS SQL
+    SQL SECURITY DEFINER
+    COMMENT ''
+BEGIN
+DECLARE EXIT HANDLER FOR NOT FOUND
+BEGIN
+SELECT * FROM `salesman`;
+END;
+SELECT * FROM `salesman` s
+WHERE s.Address LIKE CONCAT('%', Adres, '%')
+INTO @dummy1, @dummy2, @dummy3, @dummy4, @dummy5;
+SELECT s.Address,a.`ApartType`, a.`TotSquare`, a.`UseSquare`, a.`Balcony`, a.`Floor`, i.`Price`
+FROM salesman s
+INNER JOIN info i ON s.SalesmanmanID = i.Salesman_SalesmanmanID
+INNER JOIN apartments a ON i.Apartments_ApartmentID = a.ApartmentID
+WHERE s.Address LIKE CONCAT('%', Adres, '%');
+END$$
+
+DELIMITER ;
+
+#
+# Definition for the `tmp_ems_so_177` procedure : 
+#
+
+DELIMITER $$
+
+CREATE DEFINER = 'root'@'localhost' PROCEDURE `tmp_ems_so_177`(
+        IN `Adres` VARCHAR(20)
+    )
+    NOT DETERMINISTIC
+    CONTAINS SQL
+    SQL SECURITY DEFINER
+    COMMENT ''
+BEGIN
+DECLARE EXIT HANDLER FOR NOT FOUND
+SELECT * FROM `salesman`;
+SELECT s.Address,a.`ApartType`, a.`TotSquare`, a.`UseSquare`, a.`Balcony`, a.`Floor`, i.`Price`
+FROM salesman s
+INNER JOIN info i ON s.SalesmanmanID = i.Salesman_SalesmanmanID
+INNER JOIN apartments a ON i.Apartments_ApartmentID = a.ApartmentID
+WHERE s.Address LIKE CONCAT('%', Adres, '%');
+END$$
+
+DELIMITER ;
+
+#
+# Data for the `apartments` table  (LIMIT 0,500)
+#
+
+INSERT INTO `apartments` (`ApartmentID`, `ApartType`, `TotSquare`, `UseSquare`, `Floor`, `Balcony`) VALUES
+  (1,2,50,46,3,'NO'),
+  (2,3,87,83,2,'YES'),
+  (3,1,36,34,5,'YES'),
+  (4,2,59,54,1,'NO'),
+  (5,3,82,79,8,'YES');
+COMMIT;
+
+#
+# Data for the `buyers` table  (LIMIT 0,500)
+#
+
+INSERT INTO `buyers` (`BuyerID`, `BuyerFIO`, `Phone`, `Pasport`) VALUES
+  (1,'Иванов Иван Иванович','+7 (999) 111-22-33','1234 567890'),
+  (2,'Петрова Анна Сергеевна','+7 (999) 222-33-44','2345 678901'),
+  (3,'Сидоров Дмитрий Алексеевич','+7 (999) 333-44-55','3456 789012'),
+  (4,'Кузнецова Елена Владимировна','+7 (999) 444-55-66','4567 890123'),
+  (5,'Смирнов Алексей Павлович','+7 (999) 555-66-77','5678 901234');
+COMMIT;
+
+#
+# Data for the `info` table  (LIMIT 0,500)
+#
+
+INSERT INTO `info` (`InfoID`, `Salesman_SalesmanmanID`, `Buyers_BuyerID`, `Apartments_ApartmentID`, `Price`, `SaleDate`) VALUES
+  (1,1,1,1,5500000,20260325),
+  (2,2,2,2,3750001,20260320),
+  (3,1,3,3,8900000,20260318),
+  (4,3,4,4,4200001,20260315),
+  (5,2,5,5,6100000,20260310);
+COMMIT;
+
+#
+# Data for the `salesman` table  (LIMIT 0,500)
+#
+
+INSERT INTO `salesman` (`SalesmanmanID`, `FIO`, `Pasport`, `Address`, `Phone`) VALUES
+  (1,'Иванов Иван Иванович','1234 567890','ул. Ленина, д. 1, кв. 1','89991112233'),
+  (2,'Юг Алина Сергеевна','2345 678901','пр. Невский, д. 10, кв. 5','89992223344'),
+  (3,'Сидоров Дмитрий Петрович','3456 789012','ул. Мира, д. 10, кв. 5','89993334455'),
+  (4,'Кузнецова Елена Владимировна','4567 890123','ул, Баумана, д. 7, кв. 3','89994445566'),
+  (5,'Смирнов Алексей Павлович','5678 901234','пр. Красный, д. 15, кв. 8','89995556677');
+COMMIT;
+
+
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
